@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,25 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rifas Kelso PRO</title>
 
-<!-- ======== ESTILOS ======== -->
 <style>
-/* FONDO GENERAL */
+/* ===== ESTILO GENERAL ===== */
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: url("https://i.imgur.com/DOdVSbP.jpeg");
+    background: url("https://i.imgur.com/DOdVSbP.jpeg") no-repeat center center fixed;
     background-size: cover;
-    background-attachment: fixed;
-    background-position: center;
     color: #fff;
 }
-.overlay{
+.overlay {
     background: rgba(0,0,0,0.55);
     min-height: 100vh;
 }
-
-/* LOGO ANIMADO */
-.gallo{
+.gallo {
     width: 170px;
     height: 170px;
     background: url("https://i.imgur.com/TDFg7nK.png") center/contain no-repeat;
@@ -35,27 +29,25 @@ body {
     0% { transform: translateY(0) scale(1); }
     100% { transform: translateY(-12px) scale(1.07); }
 }
-
-/* TARJETAS DE RIFAS */
 .contenedor-rifas {
     display: grid;
     grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
     gap: 20px;
     padding: 20px;
 }
-.rifa-card{
+.rifa-card {
     background: rgba(0,0,0,0.75);
     padding: 15px;
     border-radius: 15px;
     border: 2px solid #59ff4f;
     box-shadow: 0 0 12px #34ff28;
 }
-.rifa-card img{
+.rifa-card img {
     width: 100%;
     border-radius: 10px;
     border: 2px solid #65ff59;
 }
-.btn{
+.btn {
     display: block;
     background: #6dff5d;
     padding: 10px;
@@ -68,10 +60,8 @@ body {
     text-decoration: none;
     transition: .2s;
 }
-.btn:hover{ background:#a7ff8e; }
-
-/* MODAL */
-#modal, #loginModal, #sorteoModal{
+.btn:hover { background:#a7ff8e; }
+#modal, #loginModal, #sorteoModal {
     display:none;
     position: fixed;
     top:0; left:0;
@@ -80,23 +70,21 @@ body {
     justify-content:center;
     align-items:center;
 }
-.modal-content{
+.modal-content {
     background:#144314;
     padding:20px;
     border-radius:15px;
     width:90%; max-width:400px;
     border:2px solid #59ff4f;
 }
-input, select{
+input, select {
     width:100%;
     padding:10px;
     border-radius:8px;
     border:none;
     margin-bottom:10px;
 }
-
-/* PANEL ADMIN */
-#adminPanel{
+#adminPanel {
     display:none;
     background:rgba(0,0,0,0.7);
     padding:20px;
@@ -104,9 +92,7 @@ input, select{
     border-radius:12px;
     border:2px solid #59ff4f;
 }
-
-/* RUEDA DE SORTEO */
-#ruleta{
+#ruleta {
     width:300px; height:300px;
     border-radius:50%;
     border:10px solid #59ff4f;
@@ -131,10 +117,7 @@ input, select{
 
 <h2 style="text-align:center;color:#a0ff8d;">Rifas disponibles</h2>
 
-<!-- RIFAS -->
 <div class="contenedor-rifas">
-
-    <!-- RIFA 1 -->
     <div class="rifa-card">
         <img src="https://i.imgur.com/LtFqLh7.jpeg">
         <h3>Moto Italika 150</h3>
@@ -142,8 +125,6 @@ input, select{
         <p>Precio: $100 MXN</p>
         <div class="btn" onclick="abrirCompra('Moto Italika 150',100)">Participar</div>
     </div>
-
-    <!-- RIFA 2 -->
     <div class="rifa-card">
         <img src="https://i.imgur.com/Bm3VUxV.jpeg">
         <h3>Gallo Kelso Original</h3>
@@ -153,14 +134,13 @@ input, select{
     </div>
 </div>
 
-<!-- BOTÓN ADMIN OCULTO -->
 <div style="text-align:center; margin-top:20px;">
     <button onclick="mostrarLogin()" style="background:none;border:none;color:#32ff2d;font-size:14px;cursor:pointer;">
         Acceso administrador 🔒
     </button>
 </div>
 
-<!-- MODALES (login, compra y sorteo) -->
+<!-- MODALES -->
 <div id="loginModal"><div class="modal-content" style="text-align:center;">
 <h3>Login administrador</h3>
 <input id="adminPass" type="password" placeholder="Contraseña">
@@ -184,7 +164,6 @@ input, select{
 <div class="btn" style="background:red;color:white;" onclick="cerrarModal('sorteoModal')">Cerrar</div>
 </div></div>
 
-<!-- PANEL ADMIN -->
 <div id="adminPanel">
 <h2>Panel de Administración</h2>
 <button class="btn" onclick="exportarExcel()">Exportar Excel</button>
@@ -196,4 +175,128 @@ input, select{
 © 2025 Rifas Kelso PRO — Sistema completo 🍀
 </footer>
 
-</div>
+</div> <!-- overlay -->
+
+<script>
+//======================= BASE DE DATOS =========================//
+if (!localStorage.getItem("rifas_compras")) {
+    localStorage.setItem("rifas_compras", JSON.stringify([]));
+}
+let rifaActual = "";
+let totalBoletos = 0;
+
+//======================= LOGIN ADMIN =========================//
+function mostrarLogin(){ document.getElementById("loginModal").style.display = "flex"; }
+function loginAdmin(){
+    const pass = document.getElementById("adminPass").value;
+    if(pass === "kelso2025"){
+        alert("✔ Bienvenido administrador Kelso");
+        document.getElementById("loginModal").style.display = "none";
+        document.getElementById("adminPanel").style.display = "block";
+        cargarTablaAdmin();
+    } else { alert("❌ Contraseña incorrecta"); }
+}
+function cerrarModal(id){ document.getElementById(id).style.display = "none"; }
+
+//======================= COMPRA DE BOLETO =========================//
+function abrirCompra(nombre, maxBoletos){
+    rifaActual = nombre; totalBoletos = maxBoletos;
+    document.getElementById("modalTitulo").innerText = "Comprar boleto para: " + nombre;
+    generarNumerosDisponibles(); document.getElementById("modal").style.display = "flex";
+}
+function generarNumerosDisponibles(){
+    const compras = JSON.parse(localStorage.getItem("rifas_compras"));
+    const usados = compras.filter(c => c.rifa === rifaActual).map(c => c.numero);
+    let html = "";
+    for(let i=1;i<=totalBoletos;i++){ if(!usados.includes(i)) html+=`<option>${i}</option>`;}
+    document.getElementById("selNumero").innerHTML = html;
+}
+function guardarCompra(){
+    const nombre=document.getElementById("inpNombre").value;
+    const whats=document.getElementById("inpWhats").value;
+    const numero=document.getElementById("selNumero").value;
+    if(nombre==""||whats==""){ alert("❌ Debes llenar todos los campos."); return;}
+    const compras=JSON.parse(localStorage.getItem("rifas_compras"));
+    compras.push({rifa:rifaActual,nombre,whats,numero:Number(numero)});
+    localStorage.setItem("rifas_compras",JSON.stringify(compras));
+    alert("🎟 Boleto confirmado! Envíale captura al administrador.");
+    generarBoletoDescargable(nombre,numero,rifaActual);
+    window.open(`https://wa.me/52${whats}?text=Hola%20${nombre},%20tu%20boleto%20${numero}%20para%20la%20rifa%20${rifaActual}%20ha%20sido%20registrado.`);
+    cerrarModal("modal"); cargarTablaAdmin();
+}
+
+//======================= PANEL ADMIN =========================//
+function cargarTablaAdmin(){
+    const tabla=document.getElementById("tablaAdmin");
+    tabla.innerHTML=`<tr><th>Rifa</th><th>Nombre</th><th>WhatsApp</th><th>Número</th></tr>`;
+    const compras=JSON.parse(localStorage.getItem("rifas_compras"));
+    compras.forEach(c=>{tabla.innerHTML+=`<tr><td>${c.rifa}</td><td>${c.nombre}</td><td>${c.whats}</td><td>${c.numero}</td></tr>`;});
+}
+function exportarExcel(){
+    const compras=JSON.parse(localStorage.getItem("rifas_compras"));
+    let csv="Rifa,Nombre,WhatsApp,Número\n";
+    compras.forEach(c=>csv+=`${c.rifa},${c.nombre},${c.whats},${c.numero}\n`);
+    const blob=new Blob([csv],{type:"text/csv"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url; a.download="rifas_kelso_registros.csv"; a.click();
+}
+
+//======================= SORTEO =========================//
+function abrirSorteo(){
+    document.getElementById("sorteoModal").style.display="flex";
+    const ruleta=document.getElementById("ruleta");
+    const ganadorTxt=document.getElementById("ganadorTxt");
+    ganadorTxt.innerHTML="";
+    const compras=JSON.parse(localStorage.getItem("rifas_compras"));
+    if(compras.length===0){ ganadorTxt.innerHTML="❌ No hay boletos vendidos"; return;}
+    const numeros=compras.map(c=>c.numero);
+    let index=0,vueltas=0;
+    const giro=setInterval(()=>{
+        ruleta.innerHTML=numeros[index];
+        index=(index+1)%numeros.length; vueltas++;
+        if(vueltas>numeros.length*10){
+            clearInterval(giro);
+            const ganador=numeros[Math.floor(Math.random()*numeros.length)];
+            const datosGanador=compras.find(c=>c.numero==ganador);
+            ruleta.innerHTML=ganador;
+            ganadorTxt.innerHTML=`🎉 GANADOR: <br><b>${datosGanador.nombre}</b><br>Boleto #${ganador}`;
+        }
+    },50);
+}
+
+//======================= BOLETO DESCARGABLE =========================//
+function generarBoletoDescargable(nombre,numero,rifa){
+    const canvas=document.createElement("canvas");
+    canvas.width=700; canvas.height=400;
+    const ctx=canvas.getContext("2d");
+    const fondo=new Image(); fondo.src="https://i.imgur.com/DOdVSbP.jpeg";
+    fondo.onload=function(){
+        ctx.drawImage(fondo,0,0,700,400);
+        ctx.fillStyle="rgba(15,59,15,0.7)";
+        ctx.fillRect(20,20,660,360);
+        const logo=new Image(); logo.src="https://i.imgur.com/TDFg7nK.png";
+        logo.onload=function(){
+            ctx.drawImage(logo,520,30,150,150);
+            ctx.fillStyle="#fff";
+            ctx.font="28px Arial";
+            ctx.fillText("Boleto de Rifa - Kelso",30,60);
+            ctx.font="22px Arial";
+            ctx.fillText("Nombre: "+nombre,30,150);
+            ctx.fillText("Número: "+numero,30,200);
+            ctx.fillText("Rifa: "+rifa,30,250);
+            const qr=new Image();
+            qr.src=`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=Rifa:${rifa}-Boleto:${numero}-Nombre:${nombre}`;
+            qr.onload=function(){
+                ctx.drawImage(qr,520,220,150,150);
+                const img=canvas.toDataURL("image/png");
+                const a=document.createElement("a"); a.href=img; a.download=`Boleto_${numero}.png`; a.click();
+            }
+        }
+    }
+}
+</script>
+
+</body>
+</html>
+

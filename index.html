@@ -1,24 +1,199 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rifas Kelso</title>
-<link rel="stylesheet" href="styles.css">
+<title>Rifas Kelso PRO</title>
+
+<!-- ======== ESTILOS ======== -->
+<style>
+/* FONDO GENERAL */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url("https://i.imgur.com/DOdVSbP.jpeg");
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    color: #fff;
+}
+.overlay{
+    background: rgba(0,0,0,0.55);
+    min-height: 100vh;
+}
+
+/* LOGO ANIMADO */
+.gallo{
+    width: 170px;
+    height: 170px;
+    background: url("https://i.imgur.com/TDFg7nK.png") center/contain no-repeat;
+    animation: galloAnim 1.7s infinite alternate ease-in-out;
+    margin: 0 auto;
+}
+@keyframes galloAnim {
+    0% { transform: translateY(0) scale(1); }
+    100% { transform: translateY(-12px) scale(1.07); }
+}
+
+/* TARJETAS DE RIFAS */
+.contenedor-rifas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
+    gap: 20px;
+    padding: 20px;
+}
+.rifa-card{
+    background: rgba(0,0,0,0.75);
+    padding: 15px;
+    border-radius: 15px;
+    border: 2px solid #59ff4f;
+    box-shadow: 0 0 12px #34ff28;
+}
+.rifa-card img{
+    width: 100%;
+    border-radius: 10px;
+    border: 2px solid #65ff59;
+}
+.btn{
+    display: block;
+    background: #6dff5d;
+    padding: 10px;
+    margin-top: 10px;
+    text-align: center;
+    color: #000;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    transition: .2s;
+}
+.btn:hover{ background:#a7ff8e; }
+
+/* MODAL */
+#modal, #loginModal, #sorteoModal{
+    display:none;
+    position: fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.75);
+    justify-content:center;
+    align-items:center;
+}
+.modal-content{
+    background:#144314;
+    padding:20px;
+    border-radius:15px;
+    width:90%; max-width:400px;
+    border:2px solid #59ff4f;
+}
+input, select{
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:none;
+    margin-bottom:10px;
+}
+
+/* PANEL ADMIN */
+#adminPanel{
+    display:none;
+    background:rgba(0,0,0,0.7);
+    padding:20px;
+    margin:20px;
+    border-radius:12px;
+    border:2px solid #59ff4f;
+}
+
+/* RUEDA DE SORTEO */
+#ruleta{
+    width:300px; height:300px;
+    border-radius:50%;
+    border:10px solid #59ff4f;
+    margin:20px auto;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#0f3b0f;
+    font-size:40px;
+}
+</style>
 </head>
+
 <body>
-<header>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/0/0a/Chicken_cartoon_04.svg" class="logo">
-    <h1>Rifas Kelso</h1>
+<div class="overlay">
+
+<header style="text-align:center;padding:20px;">
+    <div class="gallo"></div>
+    <h1 style="color:#9eff7d;">RIFAS KELSO — PRO</h1>
+    <h3 style="color:#c8ffc3;">La suerte está contigo 🍀</h3>
 </header>
 
-<section class="content">
-    <h2>Bienvenido a Rifas Kelso</h2>
-    <p>Tu plataforma de rifas con estilo profesional.</p>
-</section>
+<h2 style="text-align:center;color:#a0ff8d;">Rifas disponibles</h2>
 
-<footer>
-    <p>&copy; 2025 Rifas Kelso</p>
+<!-- RIFAS -->
+<div class="contenedor-rifas">
+
+    <!-- RIFA 1 -->
+    <div class="rifa-card">
+        <img src="https://i.imgur.com/LtFqLh7.jpeg">
+        <h3>Moto Italika 150</h3>
+        <p>Boletos: 100</p>
+        <p>Precio: $100 MXN</p>
+        <div class="btn" onclick="abrirCompra('Moto Italika 150',100)">Participar</div>
+    </div>
+
+    <!-- RIFA 2 -->
+    <div class="rifa-card">
+        <img src="https://i.imgur.com/Bm3VUxV.jpeg">
+        <h3>Gallo Kelso Original</h3>
+        <p>Boletos: 50</p>
+        <p>Precio: $150 MXN</p>
+        <div class="btn" onclick="abrirCompra('Gallo Kelso Original',50)">Participar</div>
+    </div>
+</div>
+
+<!-- BOTÓN ADMIN OCULTO -->
+<div style="text-align:center; margin-top:20px;">
+    <button onclick="mostrarLogin()" style="background:none;border:none;color:#32ff2d;font-size:14px;cursor:pointer;">
+        Acceso administrador 🔒
+    </button>
+</div>
+
+<!-- MODALES (login, compra y sorteo) -->
+<div id="loginModal"><div class="modal-content" style="text-align:center;">
+<h3>Login administrador</h3>
+<input id="adminPass" type="password" placeholder="Contraseña">
+<div class="btn" onclick="loginAdmin()">Entrar</div>
+<div class="btn" style="background:red;color:white;" onclick="cerrarModal('loginModal')">Cancelar</div>
+</div></div>
+
+<div id="modal"><div class="modal-content">
+<h3 id="modalTitulo"></h3>
+<input id="inpNombre" placeholder="Nombre">
+<input id="inpWhats" placeholder="WhatsApp">
+<select id="selNumero"></select>
+<div class="btn" onclick="guardarCompra()">Confirmar</div>
+<div class="btn" style="background:red;color:white;" onclick="cerrarModal('modal')">Cerrar</div>
+</div></div>
+
+<div id="sorteoModal"><div class="modal-content" style="text-align:center;">
+<h3>Sorteo en progreso… 🎰</h3>
+<div id="ruleta">🎟️</div>
+<div id="ganadorTxt" style="font-size:22px;margin-top:10px;"></div>
+<div class="btn" style="background:red;color:white;" onclick="cerrarModal('sorteoModal')">Cerrar</div>
+</div></div>
+
+<!-- PANEL ADMIN -->
+<div id="adminPanel">
+<h2>Panel de Administración</h2>
+<button class="btn" onclick="exportarExcel()">Exportar Excel</button>
+<button class="btn" onclick="abrirSorteo()">Sortear Ganador</button>
+<table id="tablaAdmin" border="1" style="margin-top:20px;width:100%;color:white;"></table>
+</div>
+
+<footer style="text-align:center;padding:20px;background:rgba(0,0,0,0.6);">
+© 2025 Rifas Kelso PRO — Sistema completo 🍀
 </footer>
-</body>
-</html>
+
+</div>
